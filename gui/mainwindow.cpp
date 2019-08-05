@@ -274,9 +274,9 @@ void MainWindow::on_start_button_clicked()
                 has_log_analysis = true;
             }
         });
+        //Wait 4 seconds then try to read the URL and update the web widget
+        QTimer::singleShot(4000, this, SLOT(update_log_analysis_browser()));
     }
-    //Wait 4 seconds then try to read the URL and update the web widget
-    QTimer::singleShot(4000, this, SLOT(update_log_analysis_browser()));
 
     //Open up a memory manager (needs sudo password from user to actually run)
     if(!has_memory_manager){
