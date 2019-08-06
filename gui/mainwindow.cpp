@@ -450,14 +450,10 @@ void MainWindow::on_uploadbutton_clicked()
         [=]  (int exitCode)
         {
             if(exitCode){
-                ui->log->append("upload finished with status ERROR, make sure that the s3 bucket and s3 prefix and filled out!");
-                qDebug() << upload_process->readAllStandardOutput();
-                qDebug() << upload_process->readAllStandardError();
+                ui->log->append("upload failed to start");
                 delete upload_process;
             } else {
-                ui->log->append("upload finished with status NORMAL");
-                qDebug() << upload_process->readAllStandardOutput();
-                qDebug() << upload_process->readAllStandardError();
+                ui->log->append("upload started successfully, see terminal with upload status");
                 delete upload_process;
             }
         });

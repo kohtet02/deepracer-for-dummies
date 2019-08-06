@@ -105,7 +105,7 @@ private:
     QString use_pretrained_script = "../scripts/training/set-last-run-to-pretrained.sh";
     QString pretrained_path = "../docker/volumes/minio/bucket/rl-deepracer-pretrained";
     QProcess* use_pretrained_process;
-    QString upload_script = "../scripts/training/upload-snapshot.sh";
+    QString upload_script = "../scripts/training/upload.sh";
     QProcess* upload_process;
     QString delete_script = "../scripts/training/delete-last-run.sh";
     QProcess* delete_process;
