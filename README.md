@@ -12,6 +12,8 @@ For additional help, submit an issue or join the [deepracer slack](join.deepraci
 
 We've made a GUI to make training locally as simple as possible. Follow [this guide](https://medium.com/@autonomousracecarclub/how-to-improve-your-local-deepracer-workflow-23a76d12a1a9) for using the GUI.
 
+If you are receiving core `segmentation fault errors` try rebuilding the GUI using `qmake gui.pro` and `make` in the `/gui` directory. Then try rerunning ./gui to see if your problem has been fixed.
+
 ### Training Manually
 
 #### Environment
