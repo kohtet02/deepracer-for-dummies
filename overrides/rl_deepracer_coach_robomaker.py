@@ -84,7 +84,7 @@ metric_definitions = [
 
 RLCOACH_PRESET = "deepracer"
 
-gpu_available = os.environ.get("GPU_AVAILABLE", False)
+gpu_available = True if os.environ.get("GPU_AVAILABLE", "False") == "True" else False
 # 'local' for cpu, 'local_gpu' for nvidia gpu (and then you don't have to set default runtime to nvidia)
 instance_type = "local_gpu" if gpu_available else "local"
 image_name = "crr0004/sagemaker-rl-tensorflow:{}".format(
