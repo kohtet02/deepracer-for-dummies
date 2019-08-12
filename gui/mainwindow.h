@@ -95,22 +95,22 @@ private:
                             "term_cond_avg_score"};
     //Script Paths and process definintions
     QString init_script =  "../init.sh";
-    QProcess* init_process;
+    QProcess* init_process{nullptr};
     QString start_script =  "../scripts/training/start.sh";
-    QProcess* start_process;
+    QProcess* start_process{nullptr};
     QString memory_manager_script =  "../scripts/training/memory-manager.sh";
-    QProcess* memory_manager_process;
+    QProcess* memory_manager_process{nullptr};
     QString stop_script =  "../scripts/training/stop.sh";
-    QProcess* stop_process;
+    QProcess* stop_process{nullptr};
     QString use_pretrained_script = "../scripts/training/set-last-run-to-pretrained.sh";
     QString pretrained_path = "../docker/volumes/minio/bucket/rl-deepracer-pretrained";
-    QProcess* use_pretrained_process;
+    QProcess* use_pretrained_process{nullptr};
     QString upload_script = "../scripts/training/upload.sh";
-    QProcess* upload_process;
+    QProcess* upload_process{nullptr};
     QString delete_script = "../scripts/training/delete-last-run.sh";
-    QProcess* delete_process;
+    QProcess* delete_process{nullptr};
     QString log_analysis_script = "../scripts/log-analysis/start.sh";
-    QProcess* log_analysis_process;
+    QProcess* log_analysis_process{nullptr};
 
     //Log file path and graphing vars
     QString log_path = "../docker/volumes/robo/checkpoint/log/latest";

@@ -253,9 +253,11 @@ void MainWindow::on_start_button_clicked()
         if(exitCode){
             ui->log->append("Failed to start local training");
             delete start_process;
+            start_process = nullptr;
         } else {
             ui->log->append("Local training started successfully");
             delete start_process;
+            start_process = nullptr;
         }
     });
 
@@ -269,6 +271,7 @@ void MainWindow::on_start_button_clicked()
             if(exitCode && !log_analysis_url.contains("http")){
                 ui->log->append("log analysis started with an ERROR");
                 delete log_analysis_process;
+                log_analysis_process = nullptr;
             } else {
                 ui->log->append("log analysis started correctly");
                 has_log_analysis = true;
@@ -293,9 +296,11 @@ void MainWindow::on_start_button_clicked()
                     ui->log->append("memory manager failed to start :(");
                     delete memory_manager_process;
                     has_memory_manager = false;
+                    memory_manager_process = nullptr;
                 } else {
                     ui->log->append("memory memory manager stopped?????");
                     delete memory_manager_process;
+                    memory_manager_process = nullptr;
                     has_memory_manager = false;
                 }
             });
@@ -307,22 +312,23 @@ void MainWindow::on_start_button_clicked()
 void MainWindow::update_log_analysis_browser()
 {
     //If read is ready get parse the URL
-    log_analysis_process->open();
-    QString log_tool_line = log_analysis_process->readAllStandardError();
-    qDebug() << log_tool_line;
-    QStringList jupyter_output = log_tool_line.split('\n');
-    log_analysis_url = jupyter_output[jupyter_output.length()-2].replace(" ", "");
-    qDebug() << log_analysis_url;
-    log_analysis_process->close();
-    if(log_analysis_url==""){
-        QMessageBox::warning(this, "Warning", "Could not read log analysis tool URL, refresh to try again");
-    } else {
-        ui->log->append("Log analysis URL loaded: " + log_analysis_url);
-        ui->webView->load(QUrl(log_analysis_url));
-        //Refresh the page to get to the notebook
-        QTimer::singleShot(200, this, SLOT(go_to_notebook()));
+    if(log_analysis_process){
+        log_analysis_process->open();
+        QString log_tool_line = log_analysis_process->readAllStandardError();
+        qDebug() << log_tool_line;
+        QStringList jupyter_output = log_tool_line.split('\n');
+        log_analysis_url = jupyter_output[jupyter_output.length()-2].replace(" ", "");
+        qDebug() << log_analysis_url;
+        log_analysis_process->close();
+        if(log_analysis_url==""){
+            QMessageBox::warning(this, "Warning", "Could not read log analysis tool URL, refresh to try again");
+        } else {
+            ui->log->append("Log analysis URL loaded: " + log_analysis_url);
+            ui->webView->load(QUrl(log_analysis_url));
+            //Refresh the page to get to the notebook
+            QTimer::singleShot(200, this, SLOT(go_to_notebook()));
+        }
     }
-
 }
 
 void MainWindow::go_to_notebook(){
@@ -347,9 +353,11 @@ void MainWindow::on_restart_button_clicked()
             ui->log->append("stopped with status ERROR");
             ui->log->append("Restart failed!");
             delete stop_process;
+            stop_process = nullptr;
         } else {
             ui->log->append("stopped with status NORMAL");
             delete stop_process;
+            stop_process = nullptr;
             use_pretrained_process = new QProcess();
             use_pretrained_process->start("/bin/sh", QStringList{use_pretrained_script});
             connect(use_pretrained_process, static_cast<void(QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished),
@@ -359,9 +367,11 @@ void MainWindow::on_restart_button_clicked()
                     ui->log->append("pretrained model loaded with status ERROR");
                     ui->log->append("Restart failed!");
                     delete use_pretrained_process;
+                    use_pretrained_process = nullptr;
                 } else {
                     ui->log->append("pretrained model loaded with status NORMAL");
                     delete use_pretrained_process;
+                    use_pretrained_process = nullptr;
                     if(!use_pretrained){
                         this->on_use_pretrained_button_clicked(); //Set rl_coach to use_pretrained model
                     }
@@ -374,9 +384,11 @@ void MainWindow::on_restart_button_clicked()
                             ui->log->append("restarted trainied with status ERROR");
                             ui->log->append("Restart failed!");
                             delete start_process;
+                            start_process = nullptr;
                         } else {
                             ui->log->append("restarted training with status NORMAL");
                             delete start_process;
+                            start_process = nullptr;
                         }
                     });
                 }
@@ -401,9 +413,11 @@ void MainWindow::on_stop_button_clicked()
             if(exitCode){
                 ui->log->append("training stopped with status ERROR");
                 delete stop_process;
+                stop_process = nullptr;
             } else {
                 ui->log->append("training stopped  with status NORMAL");
                 delete stop_process;
+                stop_process = nullptr;
             }
         });
     }
@@ -424,9 +438,11 @@ void MainWindow::on_init_button_clicked()
             if(exitCode){
                 ui->log->append("init finished with status ERROR");
                 delete init_process;
+                init_process = nullptr;
             } else {
                 ui->log->append("init finished with status NORMAL");
                 delete init_process;
+                init_process = nullptr;
             }
         });
 
@@ -452,9 +468,11 @@ void MainWindow::on_uploadbutton_clicked()
             if(exitCode){
                 ui->log->append("upload failed to start");
                 delete upload_process;
+                upload_process = nullptr;
             } else {
                 ui->log->append("upload started successfully, see terminal with upload status");
                 delete upload_process;
+                upload_process = nullptr;
             }
         });
     }
@@ -475,9 +493,11 @@ void MainWindow::on_delete_button_clicked()
             if(exitCode){
                 ui->log->append("model deleted with status ERROR");
                 delete delete_process;
+                delete_process = nullptr;
             } else {
                 ui->log->append("model deleted with status NORMAL");
                 delete delete_process;
+                delete_process = nullptr;
             }
         });
     }
