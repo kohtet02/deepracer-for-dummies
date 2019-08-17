@@ -4,6 +4,7 @@ SCRIPT=`realpath $0`
 SCRIPTPATH=`dirname $SCRIPT`
 
 export ROBOMAKER_RUN_TYPE=distributed_training
+export ROBOMAKER_COMMAND="./run.sh build distributed_training.launch"
 
 docker-compose -f "$SCRIPTPATH/../../docker/docker-compose.yml" up -d
 echo 'waiting for containers to start up...'
