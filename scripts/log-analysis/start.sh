@@ -9,7 +9,9 @@ SCRIPTPATH=`dirname ${SCRIPT}`
 # aschu/log-analysis
 
 cd ${SCRIPTPATH}/../../aws-deepracer-workshops/log-analysis
-source log-analysis.venv/bin/activate
+virtualenv log-analysis.venv
+source ${SCRIPTPATH}/../../aws-deepracer-workshops/log-analysis/log-analysis.venv/bin/activate
+pip install -r requirements.txt
 ipython kernel install --user --name=log-analysis.venv
 ln -s ${SCRIPTPATH}/../../docker/volumes/robo/checkpoint/log ${SCRIPTPATH}/../../aws-deepracer-workshops/log-analysis/logs
 ln -s ${SCRIPTPATH}/../../docker/volumes/minio/bucket/custom_files/reward.py ${SCRIPTPATH}/../../aws-deepracer-workshops/log-analysis/reward/reward.py
