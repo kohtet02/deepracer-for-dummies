@@ -133,6 +133,7 @@ This doc is straight forward: https://www.techspot.com/downloads/5760-vnc-viewer
 
 We've made a GUI to make training locally as simple as possible. Follow [this guide](https://medium.com/@autonomousracecarclub/how-to-improve-your-local-deepracer-workflow-23a76d12a1a9) for using the GUI.
 If you are receiving segmentation fault errors try rebuilding the GUI using `qmake gui.pro` and `make` in the `/gui` directory. Then rerun `./gui` to see if your problem has been fixed.
+If you have problems with the log analysis tool make sure that you have installed virtualenv for python. `sudo apt-get install virtualenv`
 
 ### Training Manually
 ###### NOTE: You can apparently use Anaconda instead to install CUDA/CUDNN. I have not tried this, however some users have and have reported that this method is much easier. If you use this approach, you will need to first install Anaconda.  Once installed you can then use the conda package manager to install the desired versions of CUDA and cuDNN.  The following installation configuration has been reported to work together successfully ######

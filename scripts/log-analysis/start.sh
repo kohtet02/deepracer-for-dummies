@@ -9,7 +9,7 @@ SCRIPTPATH=`dirname ${SCRIPT}`
 # aschu/log-analysis
 
 cd ${SCRIPTPATH}/../../aws-deepracer-workshops/log-analysis
-virtualenv log-analysis.venv
+virtualenv -p python3 log-analysis.venv
 source ${SCRIPTPATH}/../../aws-deepracer-workshops/log-analysis/log-analysis.venv/bin/activate
 pip install -r requirements.txt
 ipython kernel install --user --name=log-analysis.venv

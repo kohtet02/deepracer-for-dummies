@@ -3,6 +3,7 @@
 
 //sudo apt-get install libqt5svg5*
 //sudo apt-get install jupyter
+//If you need to reset QTCreator setting delete the folder ~/.local/QtProject
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -11,7 +12,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
     ui->webView->load(QUrl("https://arcc-race.github.io/deepracer-wiki/#/"));
     ui->log->append("Log:\n");
-
+    qDebug() << qApp->applicationDirPath();
     this->refresh();
 }
 
@@ -36,8 +37,8 @@ void MainWindow::closeEvent (QCloseEvent *event)
 
     //Cleanup any programs that are still running
 //    ui->log->append("Stopping running programs"); //Causes bug do not use
-    if(has_memory_manager){
-        memory_manager_process->kill();
+    if(memory_manager_process){
+        memory_manager_process->terminate();
     }
     stop_process = new QProcess();
     stop_process->start("/bin/sh", QStringList{stop_script});
@@ -262,7 +263,7 @@ void MainWindow::on_start_button_clicked()
     });
 
     //Start the log analysis
-    if(!has_log_analysis){
+    if(!log_analysis_process){
         log_analysis_process = new QProcess();
         log_analysis_process->start("/bin/bash", QStringList{log_analysis_script});
         connect(log_analysis_process, static_cast<void(QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished),
@@ -270,41 +271,43 @@ void MainWindow::on_start_button_clicked()
         {
             if(exitCode && !log_analysis_url.contains("http")){
                 ui->log->append("log analysis started with an ERROR");
+                qDebug() << log_analysis_process->readAllStandardError();
+                qDebug() << log_analysis_process->readAllStandardOutput();
                 delete log_analysis_process;
                 log_analysis_process = nullptr;
             } else {
                 ui->log->append("log analysis started correctly");
-                has_log_analysis = true;
             }
         });
         //Wait 4 seconds then try to read the URL and update the web widget
-        QTimer::singleShot(4000, this, SLOT(update_log_analysis_browser()));
+        QTimer::singleShot(6000, this, SLOT(update_log_analysis_browser()));
     }
 
     //Open up a memory manager (needs sudo password from user to actually run)
-    if(!has_memory_manager){
+    if(!memory_manager_process){
         QMessageBox::StandardButton reply;
         reply = QMessageBox::question(this, "Memory Manager", "Would you like memory manager to clip model and checkpoint memory usage to 3GB?",QMessageBox::Yes|QMessageBox::No);
         if(reply == QMessageBox::Yes){
             ui->log->append("In order to run the memory manager enter your root password!");
             memory_manager_process = new QProcess();
-            memory_manager_process->start("pkexec", QStringList{qApp->applicationDirPath() + "/" + memory_manager_script});
+            memory_manager_process->start("pkexec", QStringList{memory_manager_script});
             connect(memory_manager_process, static_cast<void(QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished),
             [=]  (int exitCode)
             {
                 if(exitCode){
                     ui->log->append("memory manager failed to start :(");
+                    qDebug() << memory_manager_process->readAllStandardError();
+                    qDebug() << memory_manager_process->readAllStandardOutput();
                     delete memory_manager_process;
-                    has_memory_manager = false;
                     memory_manager_process = nullptr;
                 } else {
                     ui->log->append("memory memory manager stopped?????");
+                    qDebug() << memory_manager_process->readAllStandardError();
+                    qDebug() << memory_manager_process->readAllStandardOutput();
                     delete memory_manager_process;
                     memory_manager_process = nullptr;
-                    has_memory_manager = false;
                 }
             });
-            has_memory_manager = true;
         }
     }
 }
@@ -316,24 +319,33 @@ void MainWindow::update_log_analysis_browser()
         log_analysis_process->open();
         QString log_tool_line = log_analysis_process->readAllStandardError();
         qDebug() << log_tool_line;
-        QStringList jupyter_output = log_tool_line.split('\n');
-        log_analysis_url = jupyter_output[jupyter_output.length()-2].replace(" ", "");
-        qDebug() << log_analysis_url;
-        log_analysis_process->close();
-        if(log_analysis_url==""){
-            QMessageBox::warning(this, "Warning", "Could not read log analysis tool URL, refresh to try again");
+        if(log_tool_line.contains('\n')){
+            QStringList jupyter_output = log_tool_line.split('\n');
+            qDebug() << jupyter_output.length();
+            if(jupyter_output.length() < 2){
+                ui->log->append("Log analysis not ready. Try refreshing the GUI after a minute to access the log analysis tool!");
+             } else {
+                log_analysis_url = jupyter_output[jupyter_output.length()-2].replace(" ", "");
+                qDebug() << "Log analysis URl: " << log_analysis_url;
+                log_analysis_process->close();
+                if(!log_analysis_url.contains("http")){
+                    QMessageBox::warning(this, "Warning", "Could not read log analysis tool URL, refresh to try again");
+                } else {
+                    ui->log->append("Log analysis URL loaded: " + log_analysis_url);
+                    ui->webView->load(QUrl(log_analysis_url));
+                    //Refresh the page to get to the notebook
+                    QTimer::singleShot(200, this, SLOT(go_to_notebook()));
+                }
+            }
         } else {
-            ui->log->append("Log analysis URL loaded: " + log_analysis_url);
-            ui->webView->load(QUrl(log_analysis_url));
-            //Refresh the page to get to the notebook
-            QTimer::singleShot(200, this, SLOT(go_to_notebook()));
+            ui->log->append("Log analysis not ready. Try refreshing the GUI after a minute to access the log analysis tool!");
         }
     }
 }
 
 void MainWindow::go_to_notebook(){
     QString notebook_url = log_analysis_url.left(log_analysis_url.indexOf("\?"));
-    notebook_url += "notebooks/DeepRacer%20Log%20Analysis.ipynb";
+    notebook_url += "notebooks/Training_analysis.ipynb";
     qDebug() << notebook_url;
     ui->webView->load(QUrl(notebook_url));
 }
@@ -437,6 +449,8 @@ void MainWindow::on_init_button_clicked()
         {
             if(exitCode){
                 ui->log->append("init finished with status ERROR");
+                qDebug() << init_process->readAllStandardError();
+                qDebug() << init_process->readAllStandardOutput();
                 delete init_process;
                 init_process = nullptr;
             } else {
@@ -486,7 +500,7 @@ void MainWindow::on_delete_button_clicked()
     if(reply == QMessageBox::Yes){
         ui->log->append("Deleting last model...");
         delete_process = new QProcess();
-        delete_process->start("pkexec", QStringList{qApp->applicationDirPath() + "/" + delete_script});
+        delete_process->start("pkexec", QStringList{delete_script});
         connect(delete_process, static_cast<void(QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished),
         [=]  (int exitCode)
         {
@@ -518,6 +532,7 @@ void MainWindow::on_refresh_button_clicked()
         this->refresh();
         ui->log->append("GUI refreshed.");
     }
+    update_log_analysis_browser();
 }
 
 void MainWindow::on_use_pretrained_button_clicked()
@@ -603,15 +618,8 @@ void MainWindow::on_actionSave_as_Profile_triggered()
             profile.setAttribute("Date", QDateTime::currentDateTime().toString());
 
             //Access log file for updating the graph and log-analysis tools
-            QFile latest_log_file(log_path);
-            if(!latest_log_file.open(QIODevice::ReadOnly | QFile::Text)){
-                QMessageBox::warning(this, "Warning", "Cannot open latest log file: " + latest_log_file.errorString());
-                //Have user enter a file manually as backup
-                log_path = QFileDialog::getOpenFileName(this,"Open the most recently created log file for this profile.");
-                ui->log->append("Reading " + log_path);
-            } else {
-                ui->log->append("Reading latest log file");
-            }
+            log_path = QFileDialog::getOpenFileName(this,"Open the most recently created log file for this profile.");
+            ui->log->append("Reading " + log_path);
             this->parse_logfile(); //Get the reward values from the log file. This will help determine the best model in the profile
 
             //Find the iteration with the max reward and the max reward and add it to the profile

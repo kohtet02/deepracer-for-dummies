@@ -94,26 +94,26 @@ private:
                             "beta_entropy","discount_factor","loss_type","num_episodes_between_training","term_cond_max_episodes",
                             "term_cond_avg_score"};
     //Script Paths and process definintions
-    QString init_script =  "../init.sh";
+    QString init_script =  qApp->applicationDirPath() + "/../init.sh";
     QProcess* init_process{nullptr};
-    QString start_script =  "../scripts/training/start.sh";
+    QString start_script =  qApp->applicationDirPath() + "/../scripts/training/start.sh";
     QProcess* start_process{nullptr};
-    QString memory_manager_script =  "../scripts/training/memory-manager.sh";
+    QString memory_manager_script =  qApp->applicationDirPath() + "/../scripts/training/memory-manager.sh";
     QProcess* memory_manager_process{nullptr};
-    QString stop_script =  "../scripts/training/stop.sh";
+    QString stop_script =  qApp->applicationDirPath() + "/../scripts/training/stop.sh";
     QProcess* stop_process{nullptr};
-    QString use_pretrained_script = "../scripts/training/set-last-run-to-pretrained.sh";
-    QString pretrained_path = "../docker/volumes/minio/bucket/rl-deepracer-pretrained";
+    QString use_pretrained_script = qApp->applicationDirPath() + "/../scripts/training/set-last-run-to-pretrained.sh";
+    QString pretrained_path = qApp->applicationDirPath() + "/../docker/volumes/minio/bucket/rl-deepracer-pretrained";
     QProcess* use_pretrained_process{nullptr};
-    QString upload_script = "../scripts/training/upload.sh";
+    QString upload_script = qApp->applicationDirPath() + "/../scripts/training/upload.sh";
     QProcess* upload_process{nullptr};
-    QString delete_script = "../scripts/training/delete-last-run.sh";
+    QString delete_script = qApp->applicationDirPath() + "/../scripts/training/delete-last-run.sh";
     QProcess* delete_process{nullptr};
-    QString log_analysis_script = "../scripts/log-analysis/start.sh";
+    QString log_analysis_script = qApp->applicationDirPath() + "/../scripts/log-analysis/start.sh";
     QProcess* log_analysis_process{nullptr};
 
     //Log file path and graphing vars
-    QString log_path = "../docker/volumes/robo/checkpoint/log/latest";
+    QString log_path = "";
     QStringList log_format{"iteration", "steps", "x", "y", "yaw", "steer","throttle", "action", "reward", "done",
                            "on_track", "progress","closest_waypoint", "track_len", "timestamp"};
     QVector<double> reward_per_iteration_vector{};
@@ -123,14 +123,12 @@ private:
 
     //XML for handling current model
     QDomDocument profiles_xml;
-    QString profiles_path = "../profiles/profiles.xml";
+    QString profiles_path = qApp->applicationDirPath() + "/../profiles/profiles.xml";
 
 
     //General status variables
     bool is_running = false;
     bool is_pretrained = false;
-    bool has_memory_manager = false;
-    bool has_log_analysis = false;
     bool is_saved = true; //Used for warning the user if they are using something that may required something that has not been saved
     bool use_pretrained = false;
 };
