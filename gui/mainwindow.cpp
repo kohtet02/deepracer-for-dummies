@@ -280,7 +280,7 @@ void MainWindow::on_start_button_clicked()
             }
         });
         //Wait 4 seconds then try to read the URL and update the web widget
-        QTimer::singleShot(6000, this, SLOT(update_log_analysis_browser()));
+        QTimer::singleShot(4000, this, SLOT(update_log_analysis_browser()));
     }
 
     //Open up a memory manager (needs sudo password from user to actually run)
@@ -329,7 +329,7 @@ void MainWindow::update_log_analysis_browser()
                 qDebug() << "Log analysis URl: " << log_analysis_url;
                 log_analysis_process->close();
                 if(!log_analysis_url.contains("http")){
-                    QMessageBox::warning(this, "Warning", "Could not read log analysis tool URL, refresh to try again");
+                    //QMessageBox::warning(this, "Warning", "Could not read log analysis tool URL, refresh to try again");
                 } else {
                     ui->log->append("Log analysis URL loaded: " + log_analysis_url);
                     ui->webView->load(QUrl(log_analysis_url));
