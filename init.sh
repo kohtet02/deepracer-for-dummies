@@ -41,9 +41,9 @@ then
 	  docker network create $SAGEMAKER_NW
 fi
 
-# setup venv for log analysis
-cd ${SCRIPTPATH}/aws-deepracer-workshops/log-analysis
-virtualenv -p python3 log-analysis.venv
-source ${SCRIPTPATH}/aws-deepracer-workshops/log-analysis/log-analysis.venv/bin/activate
-pip install -r requirements.txt
-ipython kernel install --user --name=log-analysis.venv
+## setup venv for log analysis
+#cd ${SCRIPTPATH}/aws-deepracer-workshops/log-analysis
+#virtualenv -p python3 log-analysis.venv
+#source ${SCRIPTPATH}/aws-deepracer-workshops/log-analysis/log-analysis.venv/bin/activate
+#pip install -r requirements.txt
+#ipython kernel install --user --name=log-analysis.venv

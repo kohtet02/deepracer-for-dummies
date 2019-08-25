@@ -38,7 +38,10 @@ void MainWindow::closeEvent (QCloseEvent *event)
     //Cleanup any programs that are still running
 //    ui->log->append("Stopping running programs"); //Causes bug do not use
     if(memory_manager_process){
-        memory_manager_process->terminate();
+        memory_manager_process->kill();
+    }
+    if(log_analysis_process){
+        log_analysis_process->kill();
     }
     stop_process = new QProcess();
     stop_process->start("/bin/sh", QStringList{stop_script});
@@ -78,7 +81,7 @@ void MainWindow::refresh(){
         for(int i=0;i<hyperparams.length();i++){
             text += hyperparams[i] + " : ";
             int x=rl_file.indexOf(hyperparams[i])+hyperparams[i].length()+2; //Starts with + 2 because of "": #######," format
-            while(rl_file.at(x) != '\n' && rl_file.at(x) != ','){
+            while(rl_file.at(x) != '\n' && rl_file.at(x) != ','  && rl_file.at(x) != '#'){
                 text += rl_file.at(x);
                 x++;
             }
@@ -461,6 +464,7 @@ void MainWindow::on_init_button_clicked()
         });
 
         ui->log->append("Wait while the init script runs; this may take a minute or two. Once the init script finishes you may run refresh to see reward function, action space, and hyperparameters.");
+        ui->log->append("#######There is a known issue with creating the python virtual environment for log analysis in the init script if you have not yet created the venv or jupyter kernel please run:\n `cd aws-deepracer-workshops/log-analysis;virtualenv -p python3 log-analysis.venv;source log-analysis.venv/bin/activate;pip install -r requirements.txt;ipython kernel install --user --name=log-analysis.venv` \nin a terminal from deepracer-for-dummies root driectory. Note that you may need to install virtualenv with `sudo apt-get install virtualenv`#######");
     }
 }
 
