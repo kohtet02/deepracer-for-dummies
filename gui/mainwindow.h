@@ -70,6 +70,10 @@ private slots:
 
     void on_actionLoad_Profile_triggered();
 
+    void stop_training();
+
+    void timer_stop();
+
 private:
     Ui::MainWindow *ui;
 

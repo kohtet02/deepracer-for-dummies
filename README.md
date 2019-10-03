@@ -135,6 +135,10 @@ We've made a GUI to make training locally as simple as possible. Follow [this gu
 If you are receiving segmentation fault errors try rebuilding the GUI using `qmake gui.pro` and `make` in the `/gui` directory. Then rerun `./gui` to see if your problem has been fixed.
 If you have problems with the log analysis tool make sure that you have installed virtualenv for python. `sudo apt-get install virtualenv`
 
+Training timer setting for start button is added.
+Now you can train your model with 5, 10, 30, 60, 90, 120 mins to prevent training too much and overfitting problem.
+If you cancel the Training Time setting dialog, the training will set to 60 mins default.
+
 ### Training Manually
 ###### NOTE: You can apparently use Anaconda instead to install CUDA/CUDNN. I have not tried this, however some users have and have reported that this method is much easier. If you use this approach, you will need to first install Anaconda.  Once installed you can then use the conda package manager to install the desired versions of CUDA and cuDNN.  The following installation configuration has been reported to work together successfully ######
 
