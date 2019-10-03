@@ -251,6 +251,40 @@ void MainWindow::on_save_button_clicked()
 
 void MainWindow::on_start_button_clicked()
 {
+    ui->log->append("Setting training time...");
+    int train_time = 3600;
+    QDateTime current = QDateTime::currentDateTime();
+    QString starttime = current.toString("yyyy/MM/dd HH:mm:ss");
+    QString endtime = "";
+    QMessageBox::StandardButton reply;
+    //Get input for training time
+    reply = QMessageBox::question(this, "Confirmation", "Would you like to set training time?",QMessageBox::Yes|QMessageBox::No);
+    if(reply == QMessageBox::Yes){
+        QStringList items;
+        items << tr("5") << tr("10") << tr("30") << tr("60") << tr("90") << tr("120");
+
+        bool ok;
+        QString item = QInputDialog::getItem(this, tr("Set Training Time"),
+                                            tr("Time(m):"), items, 0, false, &ok);
+        if (ok && !item.isEmpty()) {
+            bool is_ok;
+            train_time = (item.toInt(&is_ok, 10) * 60);
+            ui->log->append("Training time is set for " + item + "min.");
+
+            endtime = current.addMSecs(train_time * 1000).toString("yyyy/MM/dd HH:mm:ss");
+            ui->log->append("Training start at: " + starttime);
+            ui->log->append("Training will end at: " + endtime);
+        } else {
+            ui->log->append("Training time is set for 60min(default).");
+            endtime = current.addMSecs(train_time * 1000).toString("yyyy/MM/dd HH:mm:ss");
+            ui->log->append("Training start at: " + starttime);
+            ui->log->append("Training will end at: " + endtime);
+        }
+    }
+
+    //Training will stop according to training time setting
+    QTimer::singleShot(train_time * 1000, this, SLOT(timer_stop()));
+
     ui->log->append("Starting training...");
     //Start the simulation and training instance
     start_process = new QProcess();
@@ -332,7 +366,7 @@ void MainWindow::update_log_analysis_browser()
             if(jupyter_output.length() < 2){
                 ui->log->append("Log analysis not ready. Try refreshing the GUI after a minute to access the log analysis tool!");
              } else {
-                log_analysis_url = jupyter_output[jupyter_output.length()-2].replace(" ", "");
+                log_analysis_url = jupyter_output[jupyter_output.length()-2].replace(" ", "").replace("orhttp", "http");
                 qDebug() << "Log analysis URl: " << log_analysis_url;
                 log_analysis_process->close();
                 if(!log_analysis_url.contains("http")){
@@ -423,24 +457,32 @@ void MainWindow::on_stop_button_clicked()
     QMessageBox::StandardButton reply;
     reply = QMessageBox::question(this, "Confirmation", "Are you sure you want to stop training?",QMessageBox::Yes|QMessageBox::No);
     if(reply == QMessageBox::Yes){
-        ui->log->append("Stopping training...");
-        stop_process = new QProcess();
-        stop_process->start("/bin/sh", QStringList{stop_script});
-        connect(stop_process, static_cast<void(QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished),
-        [=]  (int exitCode)
-        {
-            if(exitCode){
-                ui->log->append("training stopped with status ERROR");
-                delete stop_process;
-                stop_process = nullptr;
-            } else {
-                ui->log->append("training stopped  with status NORMAL");
-                delete stop_process;
-                stop_process = nullptr;
-            }
-        });
+        this->stop_training();
     }
+}
 
+void MainWindow::timer_stop(){
+    this->stop_training();
+}
+
+void MainWindow::stop_training()
+{
+    ui->log->append("Stopping training...");
+    stop_process = new QProcess();
+    stop_process->start("/bin/sh", QStringList{stop_script});
+    connect(stop_process, static_cast<void(QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished),
+    [=]  (int exitCode)
+    {
+        if(exitCode){
+            ui->log->append("training stopped with status ERROR");
+            delete stop_process;
+            stop_process = nullptr;
+        } else {
+            ui->log->append("training stopped  with status NORMAL");
+            delete stop_process;
+            stop_process = nullptr;
+        }
+    });
 }
 
 void MainWindow::on_init_button_clicked()
