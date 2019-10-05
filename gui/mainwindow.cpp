@@ -283,7 +283,9 @@ void MainWindow::on_start_button_clicked()
     }
 
     //Training will stop according to training time setting
-    QTimer::singleShot(train_time * 1000, this, SLOT(timer_stop()));
+    training_timer = new QTimer(this);
+    connect(training_timer, SIGNAL(timeout()), this, SLOT(timer_stop()));
+    training_timer->start(train_time * 1000);
 
     ui->log->append("Starting training...");
     //Start the simulation and training instance
@@ -477,10 +479,14 @@ void MainWindow::stop_training()
             ui->log->append("training stopped with status ERROR");
             delete stop_process;
             stop_process = nullptr;
+            training_timer->stop();
+            training_timer = nullptr;
         } else {
             ui->log->append("training stopped  with status NORMAL");
             delete stop_process;
             stop_process = nullptr;
+            training_timer->stop();
+            training_timer = nullptr;
         }
     });
 }
@@ -652,6 +658,7 @@ void MainWindow::on_hyper_parameters_textChanged()
 
 void MainWindow::on_actionSave_as_Profile_triggered()
 {
+    ui->log->append("Profile is saving...");
     // Open a file for reading
     QFile profiles_file(profiles_path);
     if(!profiles_file.open(QIODevice::ReadWrite | QIODevice::Text))
@@ -705,13 +712,16 @@ void MainWindow::on_actionSave_as_Profile_triggered()
         }
     }
     profiles_file.close();
+    ui->log->append("Profile saving finished.");
 }
 
 bool MainWindow::cpDir(const QString &srcPath, const QString &dstPath)
 {
     QDir parentDstDir(QFileInfo(dstPath).path());
-    if (!parentDstDir.mkdir(QFileInfo(dstPath).fileName()))
+    if (!parentDstDir.mkdir(QFileInfo(dstPath).fileName())) {
+        ui->log->append(QFileInfo(dstPath).fileName() + " already exists.");
         return false;
+    }
 
     QDir srcDir(srcPath);
     foreach(const QFileInfo &info, srcDir.entryInfoList(QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot)) {
@@ -723,6 +733,7 @@ bool MainWindow::cpDir(const QString &srcPath, const QString &dstPath)
             }
         } else if (info.isFile()) {
             if (!QFile::copy(srcItemPath, dstItemPath)) {
+                ui->log->append(dstItemPath + " copy failed.");
                 return false;
             }
         } else {
@@ -734,6 +745,7 @@ bool MainWindow::cpDir(const QString &srcPath, const QString &dstPath)
 
 void MainWindow::on_actionLoad_Profile_triggered()
 {
+    ui->log->append("Profile is loading...");
     QMessageBox::StandardButton reply;
     reply = QMessageBox::question(this, "Confirmation", "Are you sure you want to load a new profile? This will delete your current pretrained model and reset your training files",QMessageBox::Yes|QMessageBox::No);
     if(reply == QMessageBox::Yes){
@@ -743,7 +755,20 @@ void MainWindow::on_actionLoad_Profile_triggered()
         if(profile_dir.exists()){
             QDir pretrained_dir(pretrained_path);
             if(pretrained_dir.exists()){
-                pretrained_dir.removeRecursively(); //make sure the that directory is empty
+                ui->log->append("Cleaning pretrained model...");
+                bool isChildDeleted = pretrained_dir.removeRecursively(); //make sure the that directory is empty
+                if (isChildDeleted) {
+                    ui->log->append("All child folders and files deleted successfully.");
+                } else {
+                    ui->log->append("Not all child folders and files are deleted.");
+                }
+                bool isParentDeleted = pretrained_dir.rmdir(pretrained_dir.path());
+                if (isParentDeleted) {
+                    ui->log->append("Parent folder deleted successfully.");
+                } else {
+                    ui->log->append("Parent folder is not deleted.");
+                }
+                ui->log->append("Cleaning finished.");
             }
             if(!this->cpDir("../profiles/" + profile_name, pretrained_path)){
                 QMessageBox::warning(this, "Warning", "Error copying profile to pretrained");
@@ -782,4 +807,5 @@ void MainWindow::on_actionLoad_Profile_triggered()
             QMessageBox::warning(this, "Warning", "Could not find profile: " + profile_name);
         }
     }
+    ui->log->append("Profile loading finished.");
 }

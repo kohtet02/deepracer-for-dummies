@@ -135,6 +135,9 @@ private:
     bool is_pretrained = false;
     bool is_saved = true; //Used for warning the user if they are using something that may required something that has not been saved
     bool use_pretrained = false;
+
+    //Training Timer
+    QTimer* training_timer{nullptr};
 };
 
 #endif // MAINWINDOW_H
